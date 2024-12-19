@@ -1,40 +1,52 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
+
+interface ICountry {
+  name: string;
+  flag: string;
+  region: string;
+}
 
 export default function Home() {
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/countries');
+        const response = await axios.get(
+          process.env.REACT_APP_COUNTRIES_API || ""
+        );
         setCountries(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to load countries');
+        setError("Failed to load countries");
         setLoading(false);
+        console.log(err);
       }
     };
     fetchCountries();
   }, []);
 
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
   if (error) return <p className="text-red-500">{error}</p>;
 
-  const filteredCountries = countries.filter((country: any) =>
-    country.name.includes(searchTerm)
+  const filteredCountries = countries.filter((country: ICountry) =>
+    country.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="p-6">
       {/* Search Input */}
       <div className="mb-4">
-        <label className="block text-gray-700">
-          Search for a Country
-        </label>
+        <label className="block text-gray-700">Search for a Country</label>
         <input
           id="search"
           type="text"
@@ -46,21 +58,24 @@ export default function Home() {
       </div>
 
       {/* Display filtered countries */}
-      <div className="grid grid-cols-4">
+      <div className="m-4 grid gap-4 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-2">
         {filteredCountries.length > 0 ? (
-          filteredCountries.map((country) => (
-            <div key={country.name} className="bg-white rounded-lg shadow-md p-4">
+          filteredCountries.map((country: ICountry) => (
+            <div
+              key={country.name}
+              className="flex justify-center bg-white rounded-lg shadow-md p-4"
+            >
               {/* Accessing the flag from the 'flag' property */}
               {country.flag ? (
                 <img
-                  className="w-10 h-10 object-cover"
+                  className="w-10 h-10 object-cover mt-2"
                   src={country.flag}
                   alt={`Flag of ${country.name}`}
                 />
               ) : (
                 <p className="text-center">No Flag Available</p>
               )}
-              <div className="mt-2 text-center">
+              <div className="ml-2 text-center">
                 <h2>{country.name}</h2>
                 <p>{country.region}</p>
               </div>
@@ -72,4 +87,4 @@ export default function Home() {
       </div>
     </div>
   );
-};
+}
